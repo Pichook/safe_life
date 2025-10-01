@@ -1,10 +1,13 @@
-import { Tabs } from 'expo-router';
-import React from 'react';
-
 import { HapticTab } from '@/components/haptic-tab';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import Entypo from '@expo/vector-icons/Entypo';
+import Feather from '@expo/vector-icons/Feather';
+import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
+import { Tabs } from 'expo-router';
+import React from 'react';
+
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
@@ -12,6 +15,11 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
+      //   tabBarItemStyle: {  
+      //     //testing
+      //   borderColor: '#000000',
+      //   borderWidth:1
+      // },
         tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
         headerShown: false,
         tabBarButton: HapticTab,
@@ -24,10 +32,31 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="explore"
+        name="post"
         options={{
-          title: 'Explore',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
+          title: 'Post',
+          tabBarIcon: ({ color }) => <Entypo name="circle-with-plus" size={24} color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="map"
+        options={{
+          title: 'Hazard Map',
+          tabBarIcon: ({ color }) => <Entypo name="map" size={24} color={color} />,
+        }}
+      />      
+      <Tabs.Screen
+        name="reward"
+        options={{
+          title: 'Rewards',
+          tabBarIcon: ({ color }) => <FontAwesome5 name="gift" size={24} color={color} />,
+        }}
+      />
+        <Tabs.Screen
+        name="profile"
+        options={{
+          title: 'Profile',
+          tabBarIcon: ({ color }) => <Feather name="user" size={24} color={color} />,
         }}
       />
     </Tabs>
