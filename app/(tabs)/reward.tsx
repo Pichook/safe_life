@@ -1,23 +1,34 @@
 import { ThemedText } from '@/components/themed-text';
 import { Colors } from '@/constants/theme';
 import React from 'react';
-import { ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { Image, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-// const VOUCHER = require('@/assets/images/react-logo@2x.png');
+// const VOUCHER = require('@/assets/images/react-logo.png');
+
+import { ImageSourcePropType } from 'react-native';
 
 type Reward = {
   id: string;
   title: string;
-  subtitle: string;
+  subtitle?: string;
   costPoints: number;
+  imageURL: ImageSourcePropType;
+  dateRedeemed?: string;
 };
 
 const availableRewards: Reward[] = [
-  { id: '1', title: 'Aeon Gift Card', subtitle: '100 Yen Equivalent', costPoints: 500 },
-  { id: '2', title: 'Aeon Gift Card', subtitle: '100 Yen Equivalent', costPoints: 500 },
-  { id: '3', title: 'Aeon Gift Card', subtitle: '100 Yen Equivalent', costPoints: 500 },
-  { id: '4', title: 'Aeon Gift Card', subtitle: '100 Yen Equivalent', costPoints: 500 },
+  { id: '1', title: 'Aeon Gift Card', subtitle: '100 Yen Equivalent', costPoints: 500, imageURL: require('@/assets/images/react-logo.png') },
+  { id: '2', title: 'Aeon Gift Card', subtitle: '100 Yen Equivalent', costPoints: 500, imageURL: require('@/assets/images/react-logo.png') },
+  { id: '3', title: 'Aeon Gift Card', subtitle: '100 Yen Equivalent', costPoints: 500, imageURL: require('@/assets/images/react-logo.png') },
+  { id: '4', title: 'Aeon Gift Card', subtitle: '100 Yen Equivalent', costPoints: 500, imageURL: require('@/assets/images/react-logo.png') },
+];
+
+const redeemedRewards: Reward[] = [
+  { id: '1', title: 'Aeon Gift Card', costPoints: 500, imageURL: require('@/assets/images/react-logo.png'), dateRedeemed: 'Aug 15, 2025' },
+  { id: '2', title: 'Aeon Gift Card', costPoints: 500, imageURL: require('@/assets/images/react-logo.png'), dateRedeemed: 'Aug 15, 2025' },
+  { id: '3', title: 'Aeon Gift Card', costPoints: 500, imageURL: require('@/assets/images/react-logo.png'), dateRedeemed: 'Aug 15, 2025' },
+  { id: '4', title: 'Aeon Gift Card', costPoints: 500, imageURL: require('@/assets/images/react-logo.png'), dateRedeemed: 'Aug 15, 2025' },
 ];
 
 const reward = () => {
@@ -35,7 +46,7 @@ const reward = () => {
           <View style={{ gap: 16 }}>
             {availableRewards.map((r) => (
               <View key={r.id} style={styles.rewardCard}>
-                {/* <Image source={VOUCHER} style={styles.rewardImage} /> */}
+                <Image source={r.imageURL} style={styles.rewardImage} resizeMode='contain' />
                 <View style={{ flex: 1 }}>
                   <TouchableOpacity activeOpacity={0.8}>
                     <ThemedText style={styles.rewardTitle}>{r.title}</ThemedText>
@@ -53,14 +64,19 @@ const reward = () => {
 
         <View style={styles.section}>
           <ThemedText type="subtitle" style={styles.sectionTitle}>Redemption History</ThemedText>
-          <View style={styles.historyCard}>
-            {/* <Image source={VOUCHER} style={styles.rewardImage} /> */}
-            <View style={{ flex: 1 }}>
-              <ThemedText style={styles.rewardTitle}>Aeon Gift Card</ThemedText>
-              <ThemedText style={styles.historyDate}>Aug 15, 2025</ThemedText>
-            </View>
-            <ThemedText style={styles.negativePoints}>-100 points</ThemedText>
-          </View>
+          {
+            redeemedRewards.length > 1 && (redeemedRewards.map((r) => (
+              <View key={r.id} style={styles.historyCard}>
+                <Image source={r.imageURL} style={styles.rewardImage} resizeMode='contain'/>
+                <View style={{ flex: 1 }}>
+                  <ThemedText style={styles.rewardTitle}>{r.title}</ThemedText>
+                  <ThemedText style={styles.historyDate}>{r.dateRedeemed}</ThemedText>
+                </View>
+                <ThemedText style={styles.negativePoints}>-{r.costPoints} points</ThemedText>
+              </View>
+            )))
+          }
+
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -77,32 +93,34 @@ const styles = StyleSheet.create({
     borderWidth: 10,
     borderColor: '#FFC58E',
     borderRadius: 100,
-    padding: 10,
-    shadowColor: '#000',
-    shadowOpacity: 0.06,
-    shadowOffset: { width: 0, height: 4 },
+    paddingVertical: 20,
+    paddingHorizontal: 40,
+    boxShadow: '0 4px 16px rgba(255, 110, 7, 0.2)',
     shadowRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
   },
   pointsLabel: {
     color: '#9AA1A9',
-    fontSize: 16,
+    fontSize: 12,
   },
   pointsValue: {
     marginTop: 6,
-    fontSize: 20,
-    fontWeight: '800',
+    fontSize: 24,
+    fontWeight: '700',
     color: '#FF8A34',
   },
   pointsSub: {
     marginTop: 6,
+    fontSize: 12,
     color: '#9AA1A9',
   },
   section: {
     gap: 12,
   },
   sectionTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
     paddingHorizontal: 4,
   },
   rewardCard: {
@@ -119,32 +137,36 @@ const styles = StyleSheet.create({
     elevation: 1,
   },
   rewardImage: {
-    width: 76,
+    width: 48,
     height: 48,
     borderRadius: 8,
   },
   rewardTitle: {
     color: '#2F6BFF',
-    fontSize: 18,
-    fontWeight: '700',
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: -4,
   },
   rewardSubtitle: {
     color: '#99A0A5',
-    marginTop: 4,
+    fontSize: 10,
+    // marginTop: 2,
   },
   rewardPoints: {
     color: '#25A244',
     marginTop: 6,
+    fontSize: 14,
     fontWeight: '700',
   },
   redeemBtn: {
     backgroundColor: '#FF8A34',
-    paddingHorizontal: 18,
-    paddingVertical: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
     borderRadius: 24,
   },
   redeemText: {
     color: '#FFFFFF',
+    fontSize: 12,
     fontWeight: '700',
   },
   historyCard: {
@@ -162,10 +184,12 @@ const styles = StyleSheet.create({
   },
   historyDate: {
     color: '#99A0A5',
+    fontSize: 10,
     marginTop: 6,
   },
   negativePoints: {
     color: '#E15268',
+    fontSize: 12,
     fontWeight: '700',
   },
   seeAll: {
