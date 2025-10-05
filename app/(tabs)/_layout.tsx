@@ -1,4 +1,5 @@
 import { HapticTab } from '@/components/haptic-tab';
+import HeaderCustom from '@/components/header-custom';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
@@ -28,7 +29,7 @@ export default function TabLayout() {
         name="index"
         options={{
           title: 'Home',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
+          tabBarIcon: ({ color }) => <IconSymbol size={24} name="house.fill" color={color} />,
         }}
       />
       <Tabs.Screen
@@ -41,21 +42,24 @@ export default function TabLayout() {
       <Tabs.Screen
         name="map"
         options={{
-          title: 'Hazard Map',
+          header: () => <HeaderCustom title='Map' />,
+          headerShown: true,
           tabBarIcon: ({ color }) => <Entypo name="map" size={24} color={color} />,
         }}
       />      
       <Tabs.Screen
         name="reward"
         options={{
-          title: 'Rewards',
+          header: () => <HeaderCustom title='Rewards' />,
+          headerShown: true,
           tabBarIcon: ({ color }) => <FontAwesome5 name="gift" size={24} color={color} />,
         }}
       />
         <Tabs.Screen
         name="profile"
         options={{
-          title: 'Profile',
+          header: () => <HeaderCustom title='Profile' />,
+          headerShown: true,
           tabBarIcon: ({ color }) => <Feather name="user" size={24} color={color} />,
         }}
       />

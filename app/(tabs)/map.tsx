@@ -1,18 +1,15 @@
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import React from 'react';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
-const map = () => {
+import MapTabs from '@/components/map-tabs';
+import { View } from 'react-native';
+
+export default function App() {
+
+
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor:'#FFFFFF' }}>
-        <ThemedView style={{ flexDirection: 'column', gap:8}}>
-            <ThemedText type="title">Profile Page</ThemedText>
-            <ThemedText>This is my new page!</ThemedText>
-        </ThemedView>
-    </SafeAreaView>
-
+    <View style={{flex:1}}>
+      <MapTabs />
+    </View>
   );
-};
+}
 
-export default map;
+
