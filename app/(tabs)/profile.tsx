@@ -2,11 +2,11 @@ import { ThemedText } from '@/components/themed-text';
 import { Colors } from '@/constants/theme';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import React from 'react';
-import { ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { Image, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-// const AVATAR = require('@/assets/images/react-logo.png');
-// const THUMB = require('@/assets/images/react-logo@2x.png');
+const AVATAR = require('@/assets/images/react-logo.png');
+const THUMB = require('@/assets/images/icon.png');
 
 const posts = [
   {
@@ -39,7 +39,7 @@ const profile = () => {
         <View style={styles.card}>
           <View style={styles.avatarWrapOuter}>
             <View style={styles.avatarWrapInner}>
-              {/* <Image source={AVATAR} style={styles.avatar} resizeMode="cover" /> */}
+              <Image source={AVATAR} style={styles.avatar} resizeMode="cover" />
             </View>
           </View>
 
@@ -53,7 +53,7 @@ const profile = () => {
         </View>
 
         <View style={styles.sectionHeader}>
-          <ThemedText type="subtitle" style={{ fontSize: 22 }}>Post History</ThemedText>
+          <ThemedText type="subtitle" style={{ fontSize: 18, fontWeight: '700' }}>Post History</ThemedText>
           <TouchableOpacity activeOpacity={0.8}>
             <ThemedText style={styles.seeAll}>See All</ThemedText>
           </TouchableOpacity>
@@ -62,7 +62,7 @@ const profile = () => {
         <View style={{ gap: 16 }}>
           {posts.map((item) => (
             <View key={item.id} style={styles.postCard}>
-              {/* <Image source={THUMB} style={styles.postImage} /> */}
+              <Image source={THUMB} style={styles.postImage} />
               <View style={{ flex: 1, paddingRight: 8 }}>
                 <View style={styles.badgeDanger}>
                   <ThemedText style={styles.badgeDangerText}>Dangerous</ThemedText>
@@ -71,7 +71,7 @@ const profile = () => {
                   <ThemedText style={styles.postTitle}>{item.title}</ThemedText>
                 </TouchableOpacity>
                 <View style={styles.locationRow}>
-                  <MaterialIcons name="location-on" size={16} color="#99A0A5" />
+                  <MaterialIcons name="location-on" size={14} color="#99A0A5" />
                   <ThemedText style={styles.locationText}>{item.location}</ThemedText>
                 </View>
               </View>
@@ -132,11 +132,12 @@ const styles = StyleSheet.create({
     borderRadius: 80,
   },
   name: {
-    marginTop: 16,
+    marginTop: 12,
   },
   handle: {
     color: '#98A2B3',
-    marginTop: 4,
+    fontSize: 10,
+    // marginTop: 2,
   },
   pointsPill: {
     marginTop: 14,
@@ -145,7 +146,7 @@ const styles = StyleSheet.create({
     gap: 8,
     backgroundColor: '#FF8A34',
     paddingHorizontal: 16,
-    paddingVertical: 10,
+    paddingVertical: 8,
     borderRadius: 24,
   },
   pointsText: {
@@ -156,12 +157,14 @@ const styles = StyleSheet.create({
     marginTop: 12,
     paddingHorizontal: 4,
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-end',
     justifyContent: 'space-between',
   },
   seeAll: {
     color: Colors.light.tint,
-    fontWeight: '600',
+    fontWeight: '200',
+    fontSize:12,
+    
   },
   postCard: {
     backgroundColor: '#FFFFFF',
@@ -184,33 +187,34 @@ const styles = StyleSheet.create({
   badgeDanger: {
     alignSelf: 'flex-start',
     backgroundColor: '#FFE2E2',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
+    paddingHorizontal: 6,
+    paddingVertical: 1,
     borderRadius: 8,
     marginBottom: 6,
   },
   badgeDangerText: {
     color: '#E15268',
-    fontSize: 12,
+    fontSize: 8,
     fontWeight: '600',
   },
   postTitle: {
     color: '#2F6BFF',
-    fontSize: 18,
-    fontWeight: '700',
+    fontSize: 14,
+    fontWeight: 'bold',
   },
   locationRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: 3,
     marginTop: 6,
   },
   locationText: {
+    fontSize:9,
     color: '#99A0A5',
   },
   rightMeta: {
     alignItems: 'flex-end',
-    gap: 4,
+    gap: 2,
   },
   metaText: {
     color: '#B6BCC2',
