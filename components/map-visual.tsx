@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
 
-export default function MapVisual() {
+export default function MapVisual({style} : {style?: object}) {
     const [location, setLocation] = useState<Location.LocationObject | null>(null)
 
     useEffect(() => {
@@ -28,7 +28,7 @@ export default function MapVisual() {
 
   return (
     <View>
-        <MapView style={styles.map} 
+        <MapView style={[ styles.map, style ]} 
             initialRegion={markers[0].coordinates}>
                 {markers.map((marker, index) => (
                 <Marker
