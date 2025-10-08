@@ -15,34 +15,66 @@ import { SafeAreaView } from 'react-native-safe-area-context';
       supabase.auth.stopAutoRefresh()
     }
   })
-export default function Login() {
+export default function Signup() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [name, setName] = useState('');
   const [language, setLanguage] = useState<'km' | 'en'>('en');
   const router = useRouter();
   const [loading, setLoading] = useState(false);
 
-  async function signInWithEmail() {
+  async function signUpWithEmail() {
     setLoading(true)
-    const { error } = await supabase.auth.signInWithPassword({
+    const {
+      data: { session },
+      error,
+    } = await supabase.auth.signUp({
+    //   name: name,
       email: email,
       password: password,
-    })
-    console.log("processing...")
-    if (error) {Alert.alert(error.message); return;}
-    setLoading(false)
-    console.log("Ready")
-    router.push('/(tabs)')
-  }
+    }) 
+    
+    if (error) Alert.alert(error.message)
+    const {data: userData, error: userError} = await supabase.auth.getUser()
+    if (userError) Alert.alert(userError.message)
 
+        const user = userData?.user
+    if (user) {
+        const  { error: insertError } = await supabase
+        .from('profiles')
+        .upsert({ id: user.id, username: name })
+
+        if (insertError) Alert.alert(insertError.message)
+
+    }
+
+
+    if (!session) Alert.alert('Please check your inbox for email verification!')
+    setLoading(false)
+    router.push('/(tabs)')
+
+  }
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#FFF7F2' }}>
         <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
           <ThemedView style={styles.container}>
-            <ThemedText type="title" style={styles.welcome}>Welcome Back!</ThemedText>
-            <ThemedText style={styles.subtitle}>Log in to HazardApp</ThemedText>
+            <ThemedText type="title" style={styles.welcome}>Welcome!</ThemedText>
+            <ThemedText style={styles.subtitle}>Sign up for HazardApp</ThemedText>
 
             <View style={styles.card}>
+              <View style={styles.inputRow}>
+                <View style={styles.inputIconWrap}>
+                  <MaterialIcons name="person" size={20} color="#A87342" />
+                </View>
+                <TextInput
+                  placeholder="Name"
+                  placeholderTextColor="#B8B3AE"
+                  value={name}
+                  onChangeText={(text) => setName(text)}
+                  style={styles.textInput}
+                />
+              </View>
+
               <View style={styles.inputRow}>
                 <View style={styles.inputIconWrap}>
                   <MaterialIcons name="email" size={20} color="#A87342" />
@@ -72,14 +104,19 @@ export default function Login() {
                 />
               </View>
 
-              <TouchableOpacity activeOpacity={0.8} style={styles.verifyButton} disabled={loading} onPress={() => {
+              {/* <TouchableOpacity activeOpacity={0.8} style={styles.verifyButton} disabled={loading} onPress={() => {
                 signInWithEmail();
               }}>
                 <ThemedText style={styles.verifyText}>Log in</ThemedText>
+              </TouchableOpacity> */}
+              <TouchableOpacity activeOpacity={0.8} style={styles.verifyButton} disabled={loading} onPress={() => {
+                signUpWithEmail();
+              }}>
+                <ThemedText style={styles.verifyText}>Sign up</ThemedText>
               </TouchableOpacity>
 
-              <TouchableOpacity activeOpacity={0.7} style={{ alignSelf: 'center' }} onPress={() => router.push('/signup')}>
-                <ThemedText style={styles.forgot}>Don't have an account? Sign up</ThemedText>
+              <TouchableOpacity activeOpacity={0.7} style={{ alignSelf: 'center' }}>
+                <ThemedText style={styles.forgot}>Forgot password?</ThemedText>
               </TouchableOpacity>
             </View>
 

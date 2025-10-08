@@ -1,9 +1,10 @@
-import { ThemedText } from '@/components/themed-text';
+
 import { Colors } from '@/constants/theme';
+import { supabase } from '@/lib/supabase';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import React from 'react';
-import { Image, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { Session } from '@supabase/supabase-js';
+import React, { useEffect, useState } from 'react';
+import { Dimensions, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 const AVATAR = require('@/assets/images/react-logo.png');
 const THUMB = require('@/assets/images/icon.png');
@@ -31,10 +32,39 @@ const posts = [
     time: '13:00',
   },
 ];
+  const { width, height } = Dimensions.get('window');
+
 
 const profile = () => {
+    const [session, setSession] = useState<Session | null>(null)
+    const [profile, setProfile] = useState<{ username?: string } | null>(null)
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session)
+    })
+    supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session)
+    })
+  }, [])
+
+  useEffect(() => {
+    if(!session?.user) return;
+
+    const fetchProfile = async () => {
+        const {data, error} = await supabase.from('profiles').select('username').eq('id', session.user?.id).single()
+        if (error) {
+        console.log(error)
+        } else {
+          setProfile(data)
+        }
+      }
+
+
+    fetchProfile()
+  }, [session])
+
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#FFFFFF' }}>
+    // <SafeAreaView style={{ flex: 1, backgroundColor: '#FFFFFF' }}>
       <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
         <View style={styles.card}>
           <View style={styles.avatarWrapOuter}>
@@ -43,19 +73,19 @@ const profile = () => {
             </View>
           </View>
 
-          <ThemedText type="subtitle" style={styles.name}>Ethan Carter</ThemedText>
-          <ThemedText style={styles.handle}>@eThan_Carter</ThemedText>
+          <Text style={styles.name}>{profile?.username}</Text>
+          <Text style={styles.handle}>@{session?.user?.email}</Text>
 
           <View style={styles.pointsPill}>
             <MaterialIcons name="star" size={16} color="#FFFFFF" />
-            <ThemedText style={styles.pointsText}>2000 Points</ThemedText>
+            <Text style={styles.pointsText}>2000 Points</Text>
           </View>
         </View>
 
         <View style={styles.sectionHeader}>
-          <ThemedText type="subtitle" style={{ fontSize: 18, fontWeight: '700' }}>Post History</ThemedText>
+          <Text style={{ fontSize: 18, fontWeight: '700' }}>Post History</Text>
           <TouchableOpacity activeOpacity={0.8}>
-            <ThemedText style={styles.seeAll}>See All</ThemedText>
+            <Text style={styles.seeAll}>See All</Text>
           </TouchableOpacity>
         </View>
 
@@ -65,26 +95,26 @@ const profile = () => {
               <Image source={THUMB} style={styles.postImage} />
               <View style={{ flex: 1, paddingRight: 8 }}>
                 <View style={styles.badgeDanger}>
-                  <ThemedText style={styles.badgeDangerText}>Dangerous</ThemedText>
+                  <Text style={styles.badgeDangerText}>Dangerous</Text>
                 </View>
                 <TouchableOpacity activeOpacity={0.8}>
-                  <ThemedText style={styles.postTitle}>{item.title}</ThemedText>
+                  <Text style={styles.postTitle}>{item.title}</Text>
                 </TouchableOpacity>
                 <View style={styles.locationRow}>
                   <MaterialIcons name="location-on" size={14} color="#99A0A5" />
-                  <ThemedText style={styles.locationText}>{item.location}</ThemedText>
+                  <Text style={styles.locationText}>{item.location}</Text>
                 </View>
               </View>
               <View style={styles.rightMeta}>
-                <ThemedText style={styles.metaText}>{item.date}</ThemedText>
-                <ThemedText style={styles.metaText}>{item.time}</ThemedText>
+                <Text style={styles.metaText}>{item.date}</Text>
+                <Text style={styles.metaText}>{item.time}</Text>
                 <MaterialIcons name="chevron-right" size={20} color="#B6BCC2" />
               </View>
             </View>
           ))}
         </View>
       </ScrollView>
-    </SafeAreaView>
+    // </SafeAreaView>
   );
 };
 
@@ -92,6 +122,11 @@ const styles = StyleSheet.create({
   container: {
     padding: 20,
     gap: 16,
+    backgroundColor: '#FFFFFF',
+    // height:height,
+    // borderWidth:1,
+    // borderColor: '#000000',
+    
   },
   card: {
     backgroundColor: '#FFFFFF',
@@ -132,6 +167,8 @@ const styles = StyleSheet.create({
     borderRadius: 80,
   },
   name: {
+    fontWeight: '700',
+    fontSize: 20,
     marginTop: 12,
   },
   handle: {

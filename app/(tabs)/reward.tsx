@@ -1,8 +1,7 @@
-import { ThemedText } from '@/components/themed-text';
+
 import { Colors } from '@/constants/theme';
 import React from 'react';
-import { Image, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { Dimensions, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 // const VOUCHER = require('@/assets/images/react-logo.png');
 
@@ -16,6 +15,8 @@ type Reward = {
   imageURL: ImageSourcePropType;
   dateRedeemed?: string;
 };
+
+const { width, height } = Dimensions.get('window');
 
 const availableRewards: Reward[] = [
   { id: '1', title: 'Aeon Gift Card', subtitle: '100 Yen Equivalent', costPoints: 500, imageURL: require('@/assets/images/react-logo.png') },
@@ -33,29 +34,30 @@ const redeemedRewards: Reward[] = [
 
 const reward = () => {
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#FFFFFF' }}>
-      <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
+    // <SafeAreaView style={{ flex: 1, backgroundColor: '#FFFFFF' }}>
+      
+      <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false} >
         <View style={styles.pointsCardOuter}>
-            <ThemedText style={styles.pointsLabel}>Your Current Points</ThemedText>
-            <ThemedText style={styles.pointsValue}>1,250</ThemedText>
-            <ThemedText style={styles.pointsSub}>Keep it up!</ThemedText>
+            <Text style={styles.pointsLabel}>Your Current Points</Text>
+            <Text style={styles.pointsValue}>1,250</Text>
+            <Text style={styles.pointsSub}>Keep it up!</Text>
         </View>
 
         <View style={styles.section}>
-          <ThemedText type="subtitle" style={styles.sectionTitle}>Available Rewards</ThemedText>
+          <Text style={styles.sectionTitle}>Available Rewards</Text>
           <View style={{ gap: 16 }}>
             {availableRewards.map((r) => (
               <View key={r.id} style={styles.rewardCard}>
                 <Image source={r.imageURL} style={styles.rewardImage} resizeMode='contain' />
                 <View style={{ flex: 1 }}>
                   <TouchableOpacity activeOpacity={0.8}>
-                    <ThemedText style={styles.rewardTitle}>{r.title}</ThemedText>
+                    <Text style={styles.rewardTitle}>{r.title}</Text>
                   </TouchableOpacity>
-                  <ThemedText style={styles.rewardSubtitle}>{r.subtitle}</ThemedText>
-                  <ThemedText style={styles.rewardPoints}>{r.costPoints} Points</ThemedText>
+                  <Text style={styles.rewardSubtitle}>{r.subtitle}</Text>
+                  <Text style={styles.rewardPoints}>{r.costPoints} Points</Text>
                 </View>
                 <TouchableOpacity style={styles.redeemBtn} activeOpacity={0.8}>
-                  <ThemedText style={styles.redeemText}>Redeem</ThemedText>
+                  <Text style={styles.redeemText}>Redeem</Text>
                 </TouchableOpacity>
               </View>
             ))}
@@ -63,30 +65,33 @@ const reward = () => {
         </View>
 
         <View style={styles.section}>
-          <ThemedText type="subtitle" style={styles.sectionTitle}>Redemption History</ThemedText>
+          <Text style={styles.sectionTitle}>Redemption History</Text>
           {
             redeemedRewards.length > 1 && (redeemedRewards.map((r) => (
               <View key={r.id} style={styles.historyCard}>
                 <Image source={r.imageURL} style={styles.rewardImage} resizeMode='contain'/>
                 <View style={{ flex: 1 }}>
-                  <ThemedText style={styles.rewardTitle}>{r.title}</ThemedText>
-                  <ThemedText style={styles.historyDate}>{r.dateRedeemed}</ThemedText>
+                  <Text style={styles.rewardTitle}>{r.title}</Text>
+                  <Text style={styles.historyDate}>{r.dateRedeemed}</Text>
                 </View>
-                <ThemedText style={styles.negativePoints}>-{r.costPoints} points</ThemedText>
+                <Text style={styles.negativePoints}>-{r.costPoints} points</Text>
               </View>
             )))
           }
 
         </View>
       </ScrollView>
-    </SafeAreaView>
+    // {/* </SafeAreaView> */}
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    padding: 20,
-    gap: 24,
+    paddingHorizontal: 20,
+    paddingVertical: 40,
+    gap: 32,
+    backgroundColor: '#FFFFFF',
+    
   },
   pointsCardOuter: {
     alignSelf: 'center',
