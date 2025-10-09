@@ -1,6 +1,6 @@
 import { Alert, Dimensions, Image, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
-import MapVisual from '@/components/map-visual';
+import Map from '@/components/map';
 import { supabase } from '@/lib/supabase';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import Feather from '@expo/vector-icons/Feather';
@@ -165,7 +165,7 @@ export default function TabTwoScreen() {
   return (
     <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
       {/* <SafeAreaView style={{flex:1}}> */}
-        <MapVisual style={styles.map} />
+        <Map style={styles.map} />
         <ScrollView style={{flex:1}} contentContainerStyle={styles.overlay} keyboardShouldPersistTaps='handled'>
           <View style={styles.container}>
 
