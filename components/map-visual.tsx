@@ -1,9 +1,7 @@
+import { useLocation } from "@/app/context/location-context";
 import markers from "@/assets/markers";
-import Ionicons from '@expo/vector-icons/Ionicons';
-import { Image } from 'expo-image';
-import * as Location from "expo-location";
-import React, { useEffect, useState } from 'react';
-import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import React from 'react';
+import { StyleSheet, View } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
 
 type RankingRow = {
@@ -21,28 +19,8 @@ const RANKING_DATA: RankingRow[] = [
 ];
 
 export default function MapVisual({style} : {style?: object}) {
-    const [location, setLocation] = useState<Location.LocationObject | null>(null)
-    const [showRanking, setShowRanking] = useState<boolean>(false)
-    const [showReportSheet, setShowReportSheet] = useState<boolean>(false)
-
-    useEffect(() => {
-        (async() => {
-        try{
-            let { status } = await Location.requestForegroundPermissionsAsync();
-            if (status !== 'granted') {
-            console.log("Permission to access location was denied");
-            return;
-            }
-            let loc = await Location.getCurrentPositionAsync({});
-            if (!loc) return alert("Permission Granted but no location found");
-            setLocation(loc);
-            console.log(loc);
-        } catch(e){
-            console.log(e);
-        }
-
-        })();
-    }, []);
+    // const [location, setLocation] = useState<Location.LocationObject | null>(null)
+    const { location } = useLocation();
 
   return (
   <View style={styles.container}>
