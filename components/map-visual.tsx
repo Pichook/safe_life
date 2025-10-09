@@ -1,8 +1,9 @@
 import markers from "@/assets/markers";
 import Ionicons from '@expo/vector-icons/Ionicons';
+import { Image } from 'expo-image';
 import * as Location from "expo-location";
 import React, { useEffect, useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
 
 type RankingRow = {
@@ -22,6 +23,7 @@ const RANKING_DATA: RankingRow[] = [
 export default function MapVisual({style} : {style?: object}) {
     const [location, setLocation] = useState<Location.LocationObject | null>(null)
     const [showRanking, setShowRanking] = useState<boolean>(false)
+    const [showReportSheet, setShowReportSheet] = useState<boolean>(false)
 
     useEffect(() => {
         (async() => {
@@ -46,6 +48,15 @@ export default function MapVisual({style} : {style?: object}) {
   <View style={styles.container}>
       <MapView style={[ styles.map, style ]} 
           initialRegion={markers[0].coordinates}>
+              {/* Custom orange home marker */}
+              <Marker coordinate={markers[0].coordinates} onPress={() => setShowReportSheet(true)}>
+                <View style={styles.homeMarkerWrap}>
+                  <View style={styles.homeMarkerCircle}>
+                    <Ionicons name="home" size={22} color="#ffffff" />
+                  </View>
+                  <View style={styles.homeMarkerTriangle} />
+                </View>
+              </Marker>
               {markers.map((marker, index) => (
               <Marker
                   key={index}
@@ -110,6 +121,31 @@ export default function MapVisual({style} : {style?: object}) {
       >
         <Ionicons name="trophy" size={32} color="#f59e0b" />
       </Pressable>
+
+      <Modal visible={showReportSheet} animationType="slide" transparent>
+        <View style={styles.modalRoot}>
+          <Pressable style={styles.modalBackdrop} onPress={() => setShowReportSheet(false)} />
+          <View style={styles.sheet}>
+            <View style={styles.sheetHandle} />
+            <Text style={styles.sheetTitle}>Hazard Reports</Text>
+            <Text style={styles.sheetSubtitle}>Photo submitted by the community</Text>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.previewRow}
+            >
+              {[0,1,2,3].map((i) => (
+                <Image
+                  key={`preview-${i}`}
+                  source={require('@/assets/images/react-logo.png')}
+                  style={styles.previewImage}
+                  contentFit="cover"
+                />
+              ))}
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
   </View>
   )
 }
@@ -120,6 +156,28 @@ const styles = StyleSheet.create({
   map: {
     width: '100%',
     height: '100%',
+  },
+  // Custom orange home marker (approx 45.98 x 58.26)
+  homeMarkerWrap: {
+    alignItems: 'center',
+  },
+  homeMarkerCircle: {
+    width: 46,
+    height: 46,
+    borderRadius: 23,
+    backgroundColor: '#f59e0b',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  homeMarkerTriangle: {
+    width: 0,
+    height: 0,
+    borderLeftWidth: 10,
+    borderRightWidth: 10,
+    borderTopWidth: 12,
+    borderLeftColor: 'transparent',
+    borderRightColor: 'transparent',
+    borderTopColor: '#f59e0b',
   },
   rankingCard: {
     position: 'absolute',
@@ -222,5 +280,51 @@ const styles = StyleSheet.create({
     shadowRadius: 10,
     shadowOffset: { width: 0, height: 4 },
     elevation: 3,
+  },
+  modalRoot: {
+    flex: 1,
+    justifyContent: 'flex-end',
+  },
+  modalBackdrop: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'transparent',
+  },
+  sheet: {
+    backgroundColor: '#ffffff',
+    paddingHorizontal: 16,
+    paddingTop: 8,
+    paddingBottom: 24,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    // slightly taller and avoid covering bottom nav bar
+    minHeight: 320,
+    marginBottom: 84,
+  },
+  sheetHandle: {
+    alignSelf: 'center',
+    width: 40,
+    height: 4,
+    backgroundColor: '#e5e7eb',
+    borderRadius: 999,
+    marginBottom: 8,
+  },
+  sheetTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#111827',
+  },
+  sheetSubtitle: {
+    marginTop: 8,
+    color: '#6b7280',
+  },
+  previewRow: {
+    paddingVertical: 16,
+  },
+  previewImage: {
+    width: 320,
+    height: 220,
+    borderRadius: 12,
+    marginRight: 16,
+    backgroundColor: '#f3f4f6',
   },
 });
