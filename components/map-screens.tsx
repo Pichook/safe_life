@@ -7,7 +7,7 @@ import MapVisual from './map-visual';
 export default function MapScreens({activeTab}: {activeTab: 'map' | 'list'}) {
 
   return (
-    <View>
+    <View style={styles.container}>
         {
             activeTab === 'map' ? (
                 <MapVisual  />
