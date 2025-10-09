@@ -1,7 +1,9 @@
 import { useLocation } from "@/app/context/location-context";
 import markers from "@/assets/markers";
-import React from 'react';
-import { StyleSheet, View } from 'react-native';
+import Ionicons from "@expo/vector-icons/Ionicons";
+import { Image } from 'expo-image';
+import React, { useState } from 'react';
+import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
 
 type RankingRow = {
@@ -21,6 +23,8 @@ const RANKING_DATA: RankingRow[] = [
 export default function MapVisual({style} : {style?: object}) {
     // const [location, setLocation] = useState<Location.LocationObject | null>(null)
     const { location } = useLocation();
+    const [showRanking, setShowRanking] = useState<boolean>(false)
+    const [showReportSheet, setShowReportSheet] = useState<boolean>(false)
 
   return (
   <View style={styles.container}>
