@@ -4,6 +4,7 @@ const image = z.object({
     uri: z.url(),
     type: z.string(),
     name: z.string(),
+    base64: z.string().optional(),
 })
 
 const postSchema = z.object({
@@ -13,9 +14,9 @@ const postSchema = z.object({
     category: z.enum(['Drainage', 'Ongoing Disaster', 'Road Hazard', 'Others', '']),
     description: z.string().max(500).optional(),
     hazardlevel: z.enum(['Low', 'Medium', 'High']),
+    dangerScore: z.number().min(0).max(10).optional(),
     latitude: z.number().min(-90).max(90).optional(),
     longitude: z.number().min(-180).max(180).optional(),
-    
 })
 
 
