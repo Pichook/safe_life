@@ -3,41 +3,44 @@ import { Colors } from '@/constants/theme';
 import { supabase } from '@/lib/supabase';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { Session } from '@supabase/supabase-js';
-import React, { useEffect, useState } from 'react';
-import { Dimensions, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import * as Location from 'expo-location';
+import React, { useCallback, useEffect, useState } from 'react';
+import { Dimensions, Image, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Float } from 'react-native/Libraries/Types/CodegenTypes';
 
 const AVATAR = require('@/assets/images/react-logo.png');
 const THUMB = require('@/assets/images/icon.png');
 
-const posts = [
-  {
-    id: '1',
-    title: 'Street 171',
-    location: 'Royal Blvd.',
-    date: '2024/08/21',
-    time: '13:00',
-  },
-  {
-    id: '2',
-    title: 'Street 171',
-    location: 'Royal Blvd.',
-    date: '2024/08/21',
-    time: '13:00',
-  },
-  {
-    id: '3',
-    title: 'Street 171',
-    location: 'Royal Blvd.',
-    date: '2024/08/21',
-    time: '13:00',
-  },
-];
+
   const { width, height } = Dimensions.get('window');
 
+  type PostRecord = {
+    id: string;
+    title: string;
+    location: location;
+    category: string;
+    updateat: { date: string; time: string };
+    imageid: {
+      uri: string;
+    }
+  }
+
+  interface post {
+    data: PostRecord[] | null;
+  }
+
+  type location = {
+    name: string;
+    latitude: Float;
+    longitude: Float;
+  }
 
 const profile = () => {
     const [session, setSession] = useState<Session | null>(null)
     const [profile, setProfile] = useState<{ username?: string } | null>(null)
+    const [postHistory, setPostHistory] = useState<PostRecord[]>([]);
+    const [location, setLocation] = useState<location | null>(null);
+    
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session)
@@ -47,25 +50,185 @@ const profile = () => {
     })
   }, [])
 
-  useEffect(() => {
-    if(!session?.user) return;
+  // useEffect(() => {
+    const [refreshing, setRefreshing] = useState(false);
 
-    const fetchProfile = async () => {
-        const {data, error} = await supabase.from('profiles').select('username').eq('id', session.user?.id).single()
-        if (error) {
-        console.log(error)
-        } else {
-          setProfile(data)
-        }
+    const fetchPosts = useCallback(async () => {
+      if (!session?.user) return;
+
+      const { data, error } = await supabase
+        .from('posts')
+        .select(`
+              id,
+              latitude,
+              longitude,
+              updatedat,
+              category,
+              imageid (
+                uri
+              )
+      `)
+        .eq('userid', session.user?.id);
+
+      if (error) {
+        console.log(error);
+        return;
       }
 
+      if (!data || data.length === 0) {
+        setPostHistory([]);
+        return;
+      }
 
-    fetchProfile()
-  }, [session])
+      // Ask for permission before using Location API
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        console.log('Permission to access location denied');
+        // Map data to PostRecord shape with fallback values
+        setPostHistory(
+          data.map((item: any) => {
+            let date = '';
+            let time = '';
+            if (item.updatedat) {
+              const dateObj = new Date(item.updatedat);
+              date = dateObj.toLocaleDateString('en-GB');
+              time = dateObj.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+            }
+            return {
+              id: item.id,
+              title: '', // fallback, as title is not selected
+              location: {
+                name: 'Unknown location',
+                latitude: item.latitude,
+                longitude: item.longitude,
+              },
+              category: item.category ?? '', // typo in select: should be category
+              updateat: { date, time },
+              imageid: Array.isArray(item.imageid) ? item.imageid[0] : item.imageid,
+            };
+          })
+        );
+        return;
+      }
+
+      // Map through each post and enrich with readable location name
+      const updatedPosts = await Promise.all(
+        data.map(async (item: any) => {
+          try {
+            const result = await Location.reverseGeocodeAsync({
+              latitude: item.latitude,
+              longitude: item.longitude,
+            });
+
+            const place = result[0];
+            const locationName = place
+              ? `${place.name || ''} ${place.street || ''}, ${place.city || ''}, ${place.region || ''}, ${place.country || ''}`
+              : 'Unknown location';
+            let date = '';
+            let time = '';
+            if (item.updatedat) {
+              const dateObj = new Date(item.updatedat);
+              date = dateObj.toLocaleDateString('en-GB');
+              time = dateObj.toLocaleTimeString('en-GB', {
+                hour: '2-digit',
+                minute: '2-digit',
+              });
+            } 
+
+            return {
+              id: item.id,
+              title: '',
+              location: {
+                name: locationName,
+                latitude: item.latitude,
+                longitude: item.longitude,
+              },
+              category: item.category ?? '',
+              updateat: { date, time },
+              imageid: Array.isArray(item.imageid) ? item.imageid[0] : item.imageid,
+            } as PostRecord;
+          } catch (err) {
+            console.log('Geocode error:', err);
+            // fallback to unknown location
+            let date = '';
+            let time = '';
+            if (item.updatedat) {
+              const dateObj = new Date(item.updatedat);
+              date = dateObj.toLocaleDateString('en-GB');
+              time = dateObj.toLocaleTimeString('en-GB', {
+                hour: '2-digit',
+                minute: '2-digit',
+              });
+            }
+
+            return {
+              id: item.id,
+              title: '',
+              location: {
+                name: 'Unknown location',
+                latitude: item.latitude,
+                longitude: item.longitude,
+              },
+              category: item.category ?? '',
+              updateat: { date, time },
+              imageid: Array.isArray(item.imageid) ? item.imageid[0] : item.imageid,
+            } as PostRecord;
+          }
+        }) 
+      );
+      setPostHistory(updatedPosts);
+      console.log('Fetched posts:', updatedPosts.map(item => item.imageid));
+      return updatedPosts;
+    }, [session]);
+    
+  // }, [session]);
+
+    const fetchProfile = useCallback(async () => {
+      if (!session?.user) return null;
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('username')
+        .eq('id', session.user?.id)
+        .single();
+      if (error) {
+        console.log(error);
+        return null;
+      }
+      setProfile(data);
+      return data;
+    }, [session]);
+
+    const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    console.log('Refreshing data...');
+
+    const [updatedPosts, updatedProfile] = await Promise.all([
+      fetchPosts(),
+      fetchProfile(),
+    ]);
+
+    if (updatedPosts) setPostHistory(updatedPosts);
+    if (updatedProfile) setProfile(updatedProfile);
+
+    setRefreshing(false);
+  }, [fetchPosts, fetchProfile]);
+
+  useEffect(() => {
+    if (session?.user) {
+      fetchPosts();
+      fetchProfile();
+    }
+  }, [session]);
+
 
   return (
     // <SafeAreaView style={{ flex: 1, backgroundColor: '#FFFFFF' }}>
-      <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#4CAF50" colors={["#4CAF50"]} />
+        }
+      >
+        
         <View style={styles.card}>
           <View style={styles.avatarWrapOuter}>
             <View style={styles.avatarWrapInner}>
@@ -90,24 +253,24 @@ const profile = () => {
         </View>
 
         <View style={{ gap: 16 }}>
-          {posts.map((item) => (
+          {postHistory.slice(0, 10).map((item) => (
             <View key={item.id} style={styles.postCard}>
-              <Image source={THUMB} style={styles.postImage} />
+              <Image source={{ uri: String(item.imageid.uri)}} style={styles.postImage} />
               <View style={{ flex: 1, paddingRight: 8 }}>
                 <View style={styles.badgeDanger}>
-                  <Text style={styles.badgeDangerText}>Dangerous</Text>
+                  <Text style={styles.badgeDangerText}>{item.category}</Text>
                 </View>
                 <TouchableOpacity activeOpacity={0.8}>
-                  <Text style={styles.postTitle}>{item.title}</Text>
+                  <Text style={styles.postTitle}>Street 171</Text>
                 </TouchableOpacity>
                 <View style={styles.locationRow}>
                   <MaterialIcons name="location-on" size={14} color="#99A0A5" />
-                  <Text style={styles.locationText}>{item.location}</Text>
+                  <Text style={styles.locationText}>{item.location?.name}</Text>
                 </View>
               </View>
               <View style={styles.rightMeta}>
-                <Text style={styles.metaText}>{item.date}</Text>
-                <Text style={styles.metaText}>{item.time}</Text>
+                <Text style={styles.metaText}>{item.updateat.date}</Text>
+                <Text style={styles.metaText}>{item.updateat.time}</Text>
                 <MaterialIcons name="chevron-right" size={20} color="#B6BCC2" />
               </View>
             </View>
