@@ -11,10 +11,10 @@ import { Session } from '@supabase/supabase-js';
 import * as ImagePicker from 'expo-image-picker';
 import { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
+import Toast from 'react-native-toast-message';
 import { z } from "zod";
 import { useLocation } from '../context/location-context';
 import { image, postSchema } from './model/post_schema';
-
 // import { randomUUID } from 'expo-crypto';
 
   const { width, height } = Dimensions.get('window');
@@ -39,9 +39,9 @@ import { image, postSchema } from './model/post_schema';
 
 export default function TabTwoScreen() {
   const [pic, setPic] = useState<z.infer<typeof image> | null>(null);
-    const [session, setSession] = useState<Session | null>(null)
-    const randomID = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-    const { location } = useLocation();
+  const [session, setSession] = useState<Session | null>(null)
+  const randomID = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+  const { location } = useLocation();
   const { control, handleSubmit, formState: { errors }, setValue, reset } = useForm({
     resolver: zodResolver(postSchema),
     defaultValues:{
@@ -127,6 +127,14 @@ export default function TabTwoScreen() {
     return data.id;
   }
 
+  const toastMessage = () => {
+    Toast.show({
+      type: 'success',
+      text1: 'Post Submitted',
+      text2: 'Your report has been successfully submitted.',
+    })
+  }
+
   const onSubmit = async (postData: z.infer<typeof postSchema>) => {
     try{
       let imageid = null;
@@ -149,6 +157,7 @@ export default function TabTwoScreen() {
       console.log("location", location)
       reset();
       setPic(null);
+      toastMessage();
 
     } catch (error) {
       console.error("Error inserting post", error); 
