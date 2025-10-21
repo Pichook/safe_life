@@ -1,5 +1,3 @@
-import { Alert, Dimensions, Image, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
-
 import Map from '@/components/map';
 import { supabase } from '@/lib/supabase';
 import AntDesign from '@expo/vector-icons/AntDesign';
@@ -15,6 +13,11 @@ import Toast from 'react-native-toast-message';
 import { z } from "zod";
 import { useLocation } from '../context/location-context';
 import { image, postSchema } from './model/post_schema';
+import { Alert, Dimensions, Image, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { z } from "zod";
+import { useLocation } from '../context/location-context';
+import { image as imageSchema, postSchema } from './model/post_schema';
+
 // import { randomUUID } from 'expo-crypto';
 
   const { width, height } = Dimensions.get('window');
@@ -87,12 +90,13 @@ export default function TabTwoScreen() {
       mediaTypes: ['images'],
       allowsEditing: true,
       quality: 1,
+      base64: true,
     })
 
 
     if (!Cam_result.canceled) {
       const image = Cam_result.assets[0];
-      const imgObj = { uri: image.uri, type: image.mimeType ?? '', name: image.fileName ?? '' };
+      const imgObj = { uri: image.uri, type: image.mimeType ?? (image as any).type ?? '', name: image.fileName ?? '', base64: image.base64 ?? undefined };
       setPic(imgObj);
       setValue('image', imgObj);
     }
@@ -106,17 +110,20 @@ export default function TabTwoScreen() {
       allowsEditing: true,
       // aspect: [4, 3],
       quality: 1,
+      base64: true,
     });
 
     if (!result.canceled) {
       const image = result.assets[0]
-      setPic({ uri: image.uri, type: image.type ?? '', name: image.fileName ?? '' });
+      const imgObj = { uri: image.uri, type: image.mimeType ?? (image as any).type ?? '', name: image.fileName ?? '', base64: image.base64 ?? undefined };
+      setPic(imgObj);
+      setValue('image', imgObj);
     }
 
     console.log(result);
   }
 
-  const insertImage = async(img: z.infer<typeof image>) =>{
+  const insertImage = async(img: z.infer<typeof imageSchema>) =>{
     const {data, error} = await supabase.from('images')
   .insert([
       { uri: img.uri, type: img.type, name: img.name }
@@ -141,11 +148,59 @@ export default function TabTwoScreen() {
       if (postData.image?.uri) {
         imageid = await insertImage(postData.image);
       }
-      const { image, ...postFields } = postData; // remove image field before inserting
+      // Analyze image using Gemini to compute dangerScore (0-10)
+      const analyzeDangerScore = async(img: z.infer<typeof imageSchema>): Promise<number> => {
+        try{
+          if (!img?.base64) return 0;
+          const apiKey = process.env.EXPO_PUBLIC_GEMINI_API_KEY;
+          if (!apiKey) return 0;
+          const model = 'gemini-2.0-flash-exp';
+          const body = {
+            contents: [
+              {
+                role: 'user',
+                parts: [
+                  { inline_data: { mime_type: img.type || 'image/jpeg', data: img.base64 } },
+                  { text: 'You are a safety assessor. Review the image and output a single integer dangerScore from 0 (no danger) to 10 (extreme danger) based on likely risk to people. Respond ONLY valid JSON like {"dangerScore": 0-10} with no extra text.' }
+                ]
+              }
+            ],
+            generationConfig: { response_mime_type: 'application/json' }
+          } as any;
+
+          const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+          });
+          const json = await res.json();
+          let text = json?.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
+          let score = 0;
+          try{
+            const parsed = JSON.parse(text);
+            score = Number(parsed?.dangerScore);
+          } catch(_e){
+            const m = String(text).match(/-?\d+(?:\.\d+)?/);
+            if (m) score = Number(m[0]);
+          }
+          if (!Number.isFinite(score)) score = 0;
+          score = Math.max(0, Math.min(10, Math.round(score)));
+          return score;
+        } catch(_err){
+          return 0;
+        }
+      }
+
+      let dangerScore = 0;
+      if (postData.image?.base64) {
+        dangerScore = await analyzeDangerScore(postData.image);
+      }
+      const { image: _omitImage, ...postFields } = postData; // remove image field before inserting
       const {data, error} = await supabase.from('posts')
       .insert([{
         ...postFields,
         imageid,
+        dangerScore,
         userid: session?.user.id,
         latitude: location?.coords.latitude,
         longitude: location?.coords.longitude,
