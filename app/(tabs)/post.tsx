@@ -9,14 +9,12 @@ import { Session } from '@supabase/supabase-js';
 import * as ImagePicker from 'expo-image-picker';
 import { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
+import { Alert, Dimensions, Image, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import Toast from 'react-native-toast-message';
 import { z } from "zod";
 import { useLocation } from '../context/location-context';
 import { image, postSchema } from './model/post_schema';
-import { Alert, Dimensions, Image, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import { z } from "zod";
-import { useLocation } from '../context/location-context';
-import { image as imageSchema, postSchema } from './model/post_schema';
+
 
 // import { randomUUID } from 'expo-crypto';
 
@@ -123,7 +121,7 @@ export default function TabTwoScreen() {
     console.log(result);
   }
 
-  const insertImage = async(img: z.infer<typeof imageSchema>) =>{
+  const insertImage = async(img: z.infer<typeof image>) =>{
     const {data, error} = await supabase.from('images')
   .insert([
       { uri: img.uri, type: img.type, name: img.name }
@@ -149,7 +147,7 @@ export default function TabTwoScreen() {
         imageid = await insertImage(postData.image);
       }
       // Analyze image using Gemini to compute dangerScore (0-10)
-      const analyzeDangerScore = async(img: z.infer<typeof imageSchema>): Promise<number> => {
+      const analyzeDangerScore = async(img: z.infer<typeof image>): Promise<number> => {
         try{
           if (!img?.base64) return 0;
           const apiKey = process.env.EXPO_PUBLIC_GEMINI_API_KEY;
