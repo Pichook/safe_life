@@ -32,7 +32,7 @@ export default function Login() {
     if (error) {Alert.alert(error.message); return;}
     setLoading(false)
     console.log("Ready")
-    router.push('/(tabs)')
+    router.push('/(tabs)/map')
   }
 
   return (

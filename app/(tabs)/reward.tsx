@@ -1,97 +1,61 @@
 
+import AvailableReward from '@/components/available_reward';
+import Points from '@/components/points';
+import RedeemReward from '@/components/redeem_reward';
 import { Colors } from '@/constants/theme';
 import React from 'react';
-import { Dimensions, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
+import { RefreshProvider, useRefresh } from '../context/refresher';
 
-// const VOUCHER = require('@/assets/images/react-logo.png');
 
-import { ImageSourcePropType } from 'react-native';
-
-type Reward = {
-  id: string;
-  title: string;
-  subtitle?: string;
-  costPoints: number;
-  imageURL: ImageSourcePropType;
-  dateRedeemed?: string;
-};
-
-const { width, height } = Dimensions.get('window');
-
-const availableRewards: Reward[] = [
-  { id: '1', title: 'Aeon Gift Card', subtitle: '100 Yen Equivalent', costPoints: 500, imageURL: require('@/assets/images/react-logo.png') },
-  { id: '2', title: 'Aeon Gift Card', subtitle: '100 Yen Equivalent', costPoints: 500, imageURL: require('@/assets/images/react-logo.png') },
-  { id: '3', title: 'Aeon Gift Card', subtitle: '100 Yen Equivalent', costPoints: 500, imageURL: require('@/assets/images/react-logo.png') },
-  { id: '4', title: 'Aeon Gift Card', subtitle: '100 Yen Equivalent', costPoints: 500, imageURL: require('@/assets/images/react-logo.png') },
-];
-
-const redeemedRewards: Reward[] = [
-  { id: '1', title: 'Aeon Gift Card', costPoints: 500, imageURL: require('@/assets/images/react-logo.png'), dateRedeemed: 'Aug 15, 2025' },
-  { id: '2', title: 'Aeon Gift Card', costPoints: 500, imageURL: require('@/assets/images/react-logo.png'), dateRedeemed: 'Aug 15, 2025' },
-  { id: '3', title: 'Aeon Gift Card', costPoints: 500, imageURL: require('@/assets/images/react-logo.png'), dateRedeemed: 'Aug 15, 2025' },
-  { id: '4', title: 'Aeon Gift Card', costPoints: 500, imageURL: require('@/assets/images/react-logo.png'), dateRedeemed: 'Aug 15, 2025' },
-];
-
-const reward = () => {
+const RewardContent = () => {
+  const { refreshing, onRefresh } = useRefresh();
+  
   return (
-    // <SafeAreaView style={{ flex: 1, backgroundColor: '#FFFFFF' }}>
-      
-      <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false} >
-        <View style={styles.pointsCardOuter}>
-            <Text style={styles.pointsLabel}>Your Current Points</Text>
-            <Text style={styles.pointsValue}>1,250</Text>
-            <Text style={styles.pointsSub}>Keep it up!</Text>
-        </View>
-
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Available Rewards</Text>
-          <View style={{ gap: 16 }}>
-            {availableRewards.map((r) => (
-              <View key={r.id} style={styles.rewardCard}>
-                <Image source={r.imageURL} style={styles.rewardImage} resizeMode='contain' />
-                <View style={{ flex: 1 }}>
-                  <TouchableOpacity activeOpacity={0.8}>
-                    <Text style={styles.rewardTitle}>{r.title}</Text>
-                  </TouchableOpacity>
-                  <Text style={styles.rewardSubtitle}>{r.subtitle}</Text>
-                  <Text style={styles.rewardPoints}>{r.costPoints} Points</Text>
-                </View>
-                <TouchableOpacity style={styles.redeemBtn} activeOpacity={0.8}>
-                  <Text style={styles.redeemText}>Redeem</Text>
-                </TouchableOpacity>
-              </View>
-            ))}
-          </View>
-        </View>
-
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Redemption History</Text>
-          {
-            redeemedRewards.length > 1 && (redeemedRewards.map((r) => (
-              <View key={r.id} style={styles.historyCard}>
-                <Image source={r.imageURL} style={styles.rewardImage} resizeMode='contain'/>
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.rewardTitle}>{r.title}</Text>
-                  <Text style={styles.historyDate}>{r.dateRedeemed}</Text>
-                </View>
-                <Text style={styles.negativePoints}>-{r.costPoints} points</Text>
-              </View>
-            )))
-          }
-
-        </View>
-      </ScrollView>
-    // {/* </SafeAreaView> */}
+    <ScrollView 
+      contentContainerStyle={styles.container} 
+      showsVerticalScrollIndicator={false}
+      refreshControl={
+        <RefreshControl 
+          refreshing={refreshing} 
+          onRefresh={onRefresh}
+          tintColor="#FF8A34"
+          colors={["#FF8A34"]}
+        />
+      }
+    >
+      <Points />
+      <View style={styles.section}>
+        <AvailableReward />
+      </View>
+      <View style={styles.section}>
+        <RedeemReward />
+      </View>
+    </ScrollView>
   );
 };
 
-const styles = StyleSheet.create({
+const reward = () => {
+  return (
+    <RefreshProvider>
+      <RewardContent />
+    </RefreshProvider>
+  );
+};
+
+export const styles = StyleSheet.create({
   container: {
     paddingHorizontal: 20,
     paddingVertical: 40,
     gap: 32,
     backgroundColor: '#FFFFFF',
     
+  },
+  nullCard: {
+    color: '#a4a4a4ff',
+    fontSize: 14,
+    padding: 4,
+    marginBottom:4
   },
   pointsCardOuter: {
     alignSelf: 'center',
@@ -153,6 +117,7 @@ const styles = StyleSheet.create({
     marginBottom: -4,
   },
   rewardSubtitle: {
+    marginTop: 6,
     color: '#99A0A5',
     fontSize: 10,
     // marginTop: 2,
@@ -190,7 +155,7 @@ const styles = StyleSheet.create({
   historyDate: {
     color: '#99A0A5',
     fontSize: 10,
-    marginTop: 6,
+    // marginTop: 6,
   },
   negativePoints: {
     color: '#E15268',
